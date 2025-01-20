@@ -4,7 +4,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const name = url.searchParams.get("name") || "Codesaarthi team";
   const color = url.searchParams.get("color") || "#22D3EE";
-  console.log(name, color);
+  
   try {
     if (!name) {
       return new Response(
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 
     // Convert canvas to data URL
     const imageUrl = canvas.toDataURL();
-    console.log(imageUrl);
+
     return new Response(JSON.stringify({ imageUrl }), {
       status: 200,
       headers: {

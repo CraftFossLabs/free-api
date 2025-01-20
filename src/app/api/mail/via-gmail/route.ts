@@ -3,16 +3,10 @@ import nodemailer, { Transporter, SendMailOptions } from "nodemailer";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, emails, subject, message, EMAIL_ID, EMAIL_PASS } =
-      await req.json();
-    if (
-      !name ||
-      !emails ||
-      !Array.isArray(emails) ||
-      emails.length === 0 ||
-      !subject ||
-      !message
-    ) {
+    
+    const { name, emails, subject, message, EMAIL_ID, EMAIL_PASS } = await req.json();
+
+    if ( !name || !emails || !Array.isArray(emails) ||  emails.length === 0 || !subject || !message) {
       return NextResponse.json(
         {
           error:
