@@ -1,64 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer, { Transporter, SendMailOptions } from "nodemailer";
+import addressData from "@/data/AddressData.json";
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const { name, emails, subject, message, EMAIL_ID, EMAIL_PASS } =
-      await req.json();
-    if (
-      !name ||
-      !emails ||
-      !Array.isArray(emails) ||
-      emails.length === 0 ||
-      !subject ||
-      !message
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "All fields (name, emails, subject, message) are required, and emails should be an array with at least one email.",
-        },
-        { status: 400 }
-      );
+    const searchParams = req.nextUrl.searchParams;
+    const query = searchParams.get('query')?.toLowerCase() || '';
+
+    if (!query) {
+      return NextResponse.json({ error: "Search query is required" }, { status: 400 });
     }
 
-    if (!EMAIL_ID || !EMAIL_PASS) {
-      return NextResponse.json(
-        { error: "Email credentials are missing in environment variables" },
-        { status: 500 }
-      );
-    }
+    // Filter states based on the search query
+    const matchingStates = addressData.filter(state =>
+      state.state.toLowerCase().includes(query)
+    );
 
-    const transporter: Transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: EMAIL_ID,
-        pass: EMAIL_PASS,
-      },
+    // Return matching states with their districts
+    return NextResponse.json({
+      states: matchingStates.map(state => ({
+        name: state.state,
+        districtCount: state.count,
+        districts: state.districts
+      }))
     });
 
-    for (const email of emails) {
-      const mailOptions: SendMailOptions = {
-        from: EMAIL_ID,
-        to: email,
-        subject: subject,
-        html: message,
-      };
-
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${email}`);
-      } catch (err) {
-        console.error(`Failed to send email to ${email}:`, err);
-      }
-    }
-
-    return NextResponse.json(
-      { success: `Emails sent successfully to ${emails.length} recipients!` },
-      { status: 200 }
-    );
   } catch (error) {
     console.error("Error processing request:", error);
     return NextResponse.json(
